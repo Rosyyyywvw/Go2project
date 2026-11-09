@@ -1,0 +1,52 @@
+<launch>
+  <!-- This panel subscribes to ROS data. It does not command the robot. -->
+  <arg name="host" default="127.0.0.1" />
+  <arg name="port" default="8088" />
+  <arg name="start_geo_layer" default="false" />
+
+  <arg name="gnss_topic" default="/handsfree/rtk/gnss" />
+  <arg name="gcj02_topic" default="/amap_nav/gcj02_fix" />
+  <arg name="raw_topic" default="/handsfree/rtk/raw" />
+  <arg name="enu_topic" default="/amap_nav/enu_pose" />
+  <arg name="origin_topic" default="/amap_nav/enu_origin" />
+  <arg name="geo_status_topic" default="/amap_nav/geo_status" />
+  <arg name="path_topic" default="/viz_path_topic" />
+  <arg name="odom_topic" default="/lio/odom" />
+  <arg name="goal_topic" default="/goal_point" />
+  <arg name="reached_topic" default="/far_reach_goal_status" />
+  <arg name="stale_after_sec" default="3.0" />
+  <arg name="max_track_points" default="3000" />
+
+  <!-- Start conversion only when no coordinate-layer instance is running. -->
+  <include if="$(arg start_geo_layer)"
+           file="$(find amap_outdoor_indoor_nav)/launch/geo_coordinate_layer_real.launch">
+    <arg name="gnss_topic" value="$(arg gnss_topic)" />
+    <arg name="nmea_raw_topic" value="$(arg raw_topic)" />
+    <arg name="gcj02_fix_topic" value="$(arg gcj02_topic)" />
+    <arg name="enu_pose_topic" value="$(arg enu_topic)" />
+    <arg name="origin_topic" value="$(arg origin_topic)" />
+    <arg name="status_topic" value="$(arg geo_status_topic)" />
+  </include>
+
+  <!-- Credentials are read from AMAP_JS_KEY / AMAP_JS_SECURITY_CODE or entered
+       in the browser session; do not store them as launch parameters. -->
+  <node pkg="amap_outdoor_indoor_nav"
+        type="amap_panel.py"
+        name="amap_panel"
+        output="screen">
+    <param name="host" value="$(arg host)" />
+    <param name="port" type="int" value="$(arg port)" />
+    <param name="gnss_topic" value="$(arg gnss_topic)" />
+    <param name="gcj02_topic" value="$(arg gcj02_topic)" />
+    <param name="raw_topic" value="$(arg raw_topic)" />
+    <param name="enu_topic" value="$(arg enu_topic)" />
+    <param name="origin_topic" value="$(arg origin_topic)" />
+    <param name="geo_status_topic" value="$(arg geo_status_topic)" />
+    <param name="path_topic" value="$(arg path_topic)" />
+    <param name="odom_topic" value="$(arg odom_topic)" />
+    <param name="goal_topic" value="$(arg goal_topic)" />
+    <param name="reached_topic" value="$(arg reached_topic)" />
+    <param name="stale_after_sec" type="double" value="$(arg stale_after_sec)" />
+    <param name="max_track_points" type="int" value="$(arg max_track_points)" />
+  </node>
+</launch>

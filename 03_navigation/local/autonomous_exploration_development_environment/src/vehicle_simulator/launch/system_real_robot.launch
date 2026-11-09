@@ -1,0 +1,46 @@
+<launch>
+
+  <arg name="cameraOffsetZ" default="0"/>
+  <arg name="vehicleX" default="0"/>
+  <arg name="vehicleY" default="0"/>
+  <arg name="checkTerrainConn" default="false"/>
+  <!-- Go2W uses Super-LIO for odometry and registered scans. -->
+  <arg name="odomTopic" default="/lio/odom"/>
+  <arg name="registeredScanTopic" default="/lio/cloud_world"/>
+  <arg name="useTerrainAnalysis" default="true"/>
+  <!-- vehicle_tf_from_lio.py owns these transforms. -->
+  <arg name="publishSensorTf" default="false"/>
+  <arg name="publishCameraTf" default="false"/>
+  <arg name="startTerrain" default="true"/>
+  <!-- Scan conversion, LIO and RViz are started in their own terminals. -->
+  <arg name="startScan" default="false"/>
+  <arg name="startLoam" default="false"/>
+  <arg name="start_rviz" default="false"/>
+
+  <remap from="/state_estimation" to="$(arg odomTopic)"/>
+  <remap from="/registered_scan" to="$(arg registeredScanTopic)"/>
+
+  <include file="$(find ps3joy)/launch/ps3.launch" />
+
+  <include file="$(find local_planner)/launch/local_planner.launch" >
+    <arg name="cameraOffsetZ" value="$(arg cameraOffsetZ)"/>
+    <arg name="goalX" value="$(arg vehicleX)"/>
+    <arg name="goalY" value="$(arg vehicleY)"/>
+    <arg name="useTerrainAnalysis" value="$(arg useTerrainAnalysis)"/>
+    <arg name="publishSensorTf" value="$(arg publishSensorTf)"/>
+    <arg name="publishCameraTf" value="$(arg publishCameraTf)"/>
+  </include>
+
+  <include if="$(arg startTerrain)" file="$(find terrain_analysis)/launch/terrain_analysis.launch" />
+
+  <include if="$(arg startTerrain)" file="$(find terrain_analysis_ext)/launch/terrain_analysis_ext.launch" >
+    <arg name="checkTerrainConn" value="$(arg checkTerrainConn)"/>
+  </include>
+
+  <include if="$(arg startScan)" file="$(find sensor_scan_generation)/launch/sensor_scan_generation.launch" />
+
+  <include if="$(arg startLoam)" file="$(find loam_interface)/launch/loam_interface.launch" />
+
+  <node if="$(arg start_rviz)" launch-prefix="nice" pkg="rviz" type="rviz" name="rvizGA" args="-d $(find vehicle_simulator)/rviz/vehicle_simulator.rviz" respawn="true"/>
+
+</launch>

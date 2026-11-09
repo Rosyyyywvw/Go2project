@@ -1,0 +1,10 @@
+<!-- 移动端驱动 -->
+<launch>
+    <arg name="port" default="/dev/HFRobotRTK"/>
+    <arg name="baudrate" default="921600"/>
+
+    <node name = "handsfree_rtk" pkg = "handsfree_rtk" type = "ros_driver_um98x.py" output="screen">
+        <param name="port" value="$(arg port)" type="string"/>
+        <param name="baudrate" value="$(arg baudrate)"  type="int"/>
+    </node>
+</launch>

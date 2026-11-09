@@ -1,0 +1,62 @@
+# ===== 编译产物（catkin / CMake）=====
+build/
+devel/
+install/
+logs/
+.catkin_workspace
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+*.o
+*.so
+*.a
+*.so.*
+
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+
+# ===== 数据集与录制文件（体积过大，不入库）=====
+*.bag
+*.bag.active
+*.mp4
+*.avi
+*.pcd
+*.ply
+*.las
+*.mcap
+05_data/rosbags
+05_data/d435i_recordings/bags
+05_data/**/recordings
+diagnostics/
+
+# ===== 仿真网格资源（约 800MB，仅 Gazebo 仿真需要）=====
+03_navigation/local/autonomous_exploration_development_environment/src/vehicle_simulator/mesh/
+
+# ===== 备份快照 =====
+backups/
+
+# ===== 编辑器 / IDE =====
+.codebuddy/
+.vscode/
+.idea/
+*.code-workspace
+*.swp
+*~
+
+# ===== ROS 运行时产物 =====
+.ros/
+rosbag/
+*.log
+
+# ===== 系统 =====
+.DS_Store
+Thumbs.db
+
+# ===== 本地标定/凭据（不要提交）=====
+05_data/calib/*.json
+.env
+*.secrets

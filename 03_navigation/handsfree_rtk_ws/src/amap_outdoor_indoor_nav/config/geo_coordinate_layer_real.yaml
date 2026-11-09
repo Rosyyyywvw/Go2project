@@ -1,0 +1,22 @@
+# Real-vehicle coordinate conversion. Parameter names and values are supported
+# by src/geo_coordinate_layer.cpp. No origin is set automatically.
+gnss_topic: /handsfree/rtk/gnss
+nmea_raw_topic: /handsfree/rtk/raw
+enu_frame_id: geo_enu
+origin_mode: service
+
+# Outdoor data-collection phase: accept any fresh GGA quality >= min_gga_quality.
+# GGA quality: 1=single point, 2=DGPS/SBAS, 4=RTK Fixed, 5=RTK Float.
+# For precision runs restore quality_mode: rtk_fixed_only (or set min_gga_quality: 4).
+quality_mode: gga_min
+min_gga_quality: 1
+require_fix_status: true
+nmea_quality_timeout_sec: 1.0
+# Disabled until the receiver's covariance reporting has been verified.
+max_position_covariance: -1.0
+
+publish_gcj02: true
+enu_pose_topic: /amap_nav/enu_pose
+gcj02_fix_topic: /amap_nav/gcj02_fix
+origin_topic: /amap_nav/enu_origin
+status_topic: /amap_nav/geo_status

@@ -1,0 +1,22 @@
+<launch>
+  <!-- ################################
+       loam 输出改为 *_raw，由 pose_align 再发正式 /state_estimation、/registered_scan。
+       sendTF 关闭：map→sensor 改由 pose_align 发（与对齐后位姿一致）。
+       ################################ -->
+  <arg name="use_pose_align" default="true"/>
+
+  <node pkg="loam_interface" type="loamInterface" name="loamInterface" output="screen" required="true">
+    <param name="stateEstimationTopic" type="string" value="/lio/imu/odom" />
+    <!-- <param name="stateEstimationTopic" type="string" value="/aft_mapped_to_init" /> -->
+    <param name="registeredScanTopic" type="string" value="/lio/cloud_world" />
+    <param name="flipStateEstimation" type="bool" value="true" />
+    <param name="flipRegisteredScan" type="bool" value="true" />
+    <param if="$(arg use_pose_align)" name="sendTF" type="bool" value="false" />
+    <param unless="$(arg use_pose_align)" name="sendTF" type="bool" value="true" />
+    <param name="reverseTF" type="bool" value="false" />
+
+    <remap if="$(arg use_pose_align)" from="/state_estimation" to="/state_estimation_raw"/>
+    <remap if="$(arg use_pose_align)" from="/registered_scan" to="/registered_scan_raw"/>
+  </node>
+
+</launch>

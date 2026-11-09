@@ -1,0 +1,17 @@
+{
+  "source": "/home/unitree/Go2W_Project/05_data/d435i_recordings/bags/00_test_2026-10-23-17-27-18.bag",
+  "topic": "/camera/color/image_raw",
+  "output": "/home/unitree/Go2W_Project/05_data/d435i_recordings/videos/00_test_2026-10-23-17-27-18_upright.mp4",
+  "codec": "mp4v",
+  "width": 1280,
+  "height": 720,
+  "source_encoding": "rgb8",
+  "fps": 30.0,
+  "source_frames": 4491,
+  "rotation_degrees": 180,
+  "decoded_frames": 4491,
+  "video_duration_seconds": 149.7,
+  "source_stamp_span_seconds": 149.77216291427612,
+  "size_bytes": 242618952,
+  "timing": "Constant frame rate; one output frame per source image, in bag order"
+}

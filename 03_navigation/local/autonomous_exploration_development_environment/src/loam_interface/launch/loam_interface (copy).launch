@@ -1,0 +1,13 @@
+<launch>
+
+  <node pkg="loam_interface" type="loamInterface" name="loamInterface" output="screen" required="true">
+    <param name="stateEstimationTopic" type="string" value="/lio/imu/odom" />
+    <!-- <param name="stateEstimationTopic" type="string" value="/aft_mapped_to_init" /> -->
+    <param name="registeredScanTopic" type="string" value="/lio/cloud_world" />
+    <param name="flipStateEstimation" type="bool" value="false" />
+    <param name="flipRegisteredScan" type="bool" value="false" />
+    <param name="sendTF" type="bool" value="true" />
+    <param name="reverseTF" type="bool" value="false" />
+  </node>
+
+</launch>

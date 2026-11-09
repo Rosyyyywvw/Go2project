@@ -1,0 +1,24 @@
+<launch>
+  <!-- Real-vehicle profile: strict WGS-84 ENU, RTK Fixed GGA gate and manual origin lock. -->
+  <arg name="gnss_topic" default="/handsfree/rtk/gnss" />
+  <arg name="nmea_raw_topic" default="/handsfree/rtk/raw" />
+  <arg name="gcj02_fix_topic" default="/amap_nav/gcj02_fix" />
+  <arg name="enu_pose_topic" default="/amap_nav/enu_pose" />
+  <arg name="origin_topic" default="/amap_nav/enu_origin" />
+  <arg name="status_topic" default="/amap_nav/geo_status" />
+
+  <node pkg="amap_outdoor_indoor_nav"
+        type="geo_coordinate_layer"
+        name="geo_coordinate_layer"
+        output="screen">
+    <rosparam command="load"
+              file="$(find amap_outdoor_indoor_nav)/config/geo_coordinate_layer_real.yaml" />
+    <!-- Allow adaptation to a real RTK driver that uses different topic names. -->
+    <param name="gnss_topic" value="$(arg gnss_topic)" />
+    <param name="nmea_raw_topic" value="$(arg nmea_raw_topic)" />
+    <param name="gcj02_fix_topic" value="$(arg gcj02_fix_topic)" />
+    <param name="enu_pose_topic" value="$(arg enu_pose_topic)" />
+    <param name="origin_topic" value="$(arg origin_topic)" />
+    <param name="status_topic" value="$(arg status_topic)" />
+  </node>
+</launch>

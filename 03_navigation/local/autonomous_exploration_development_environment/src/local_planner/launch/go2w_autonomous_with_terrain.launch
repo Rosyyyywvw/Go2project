@@ -1,0 +1,12 @@
+<launch>
+  <group>
+    <remap from="/state_estimation" to="/lio/odom"/>
+    <remap from="/registered_scan" to="/lio/cloud_world"/>
+
+    <include file="$(find local_planner)/launch/local_planner copy.launch"/>
+    <include file="$(find terrain_analysis)/launch/terrain_analysis.launch"/>
+    <include file="$(find terrain_analysis_ext)/launch/terrain_analysis_ext.launch">
+      <arg name="checkTerrainConn" value="false"/>
+    </include>
+  </group>
+</launch>

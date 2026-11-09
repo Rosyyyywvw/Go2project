@@ -1,0 +1,21 @@
+<launch>
+  <!-- 经纬度目标点 -> far_planner 的 world 帧 /goal_point。
+       依赖 /amap_nav/enu_origin（geo_coordinate_layer 设过原点后发布）
+       以及 world -> geo_enu 的 TF（由 enu_lio_align 提供）。 -->
+
+  <arg name="repeat_count" default="3" />
+
+  <node pkg="amap_outdoor_indoor_nav" type="geo_goal_publisher.py"
+        name="geo_goal_publisher" output="screen">
+    <param name="parent_frame" value="world" />
+    <param name="enu_frame" value="geo_enu" />
+    <param name="target_topic" value="/geo_goal/target" />
+    <param name="goal_topic" value="/goal_point" />
+    <param name="origin_topic" value="/amap_nav/enu_origin" />
+    <param name="debug_topic" value="/geo_goal/world" />
+    <param name="status_topic" value="/geo_goal/status" />
+    <param name="repeat_count" value="$(arg repeat_count)" />
+    <param name="repeat_interval_sec" value="0.1" />
+    <param name="tf_timeout_sec" value="1.0" />
+  </node>
+</launch>

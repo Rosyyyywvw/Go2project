@@ -1,0 +1,29 @@
+<!--  -->
+<launch>
+    <!-- GPS串口配置 -->
+    <arg name="port" default="/dev/HFRobotRTK"/>
+    <arg name="baudrate" default="115200"/>
+
+    <!-- NTRIP服务器配置：账号密码不入库，从环境变量读取
+         用法：export NTRIP_USERNAME=xxx NTRIP_PASSWORD=xxx NTRIP_MOUNTPOINT=xxx -->
+    <arg name="ntrip_server" default="$(optenv NTRIP_SERVER 120.253.239.161)"/>
+    <arg name="ntrip_port" default="$(optenv NTRIP_PORT 8002)"/>
+    <arg name="ntrip_username" default="$(optenv NTRIP_USERNAME)"/>
+    <arg name="ntrip_password" default="$(optenv NTRIP_PASSWORD)"/>
+    <arg name="ntrip_mountpoint" default="$(optenv NTRIP_MOUNTPOINT)"/>
+
+    <!-- 启动NTRIP节点 -->
+    <node name="handsfree_rtk_ntrip" pkg="handsfree_rtk" type="ros_driver_um98x_ntrip.py" output="screen">
+        <!-- GPS参数 -->
+        <param name="port" value="$(arg port)" type="string"/>
+        <param name="baudrate" value="$(arg baudrate)" type="int"/>
+        
+        <!-- NTRIP参数 -->
+        <param name="ntrip_server" value="$(arg ntrip_server)" type="string"/>
+        <param name="ntrip_port" value="$(arg ntrip_port)" type="int"/>
+        <param name="ntrip_username" value="$(arg ntrip_username)" type="string"/>
+        <param name="ntrip_password" value="$(arg ntrip_password)" type="string"/>
+        <param name="ntrip_mountpoint" value="$(arg ntrip_mountpoint)" type="string"/>
+
+    </node>
+</launch>

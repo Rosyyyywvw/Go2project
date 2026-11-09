@@ -1,0 +1,17 @@
+{
+  "source": "/home/unitree/Go2W_Project/05_data/d435i_recordings/bags/07_entrance_20261020_223222_237318081.bag",
+  "topic": "/camera/color/image_raw",
+  "output": "/home/unitree/Go2W_Project/05_data/d435i_recordings/videos/07_entrance_20261020_223222_237318081_upright.mp4",
+  "codec": "mp4v",
+  "width": 1280,
+  "height": 720,
+  "source_encoding": "rgb8",
+  "fps": 30.0,
+  "source_frames": 3130,
+  "rotation_degrees": 180,
+  "decoded_frames": 3130,
+  "video_duration_seconds": 104.33333333333333,
+  "source_stamp_span_seconds": 104.37930679321289,
+  "size_bytes": 215787975,
+  "timing": "Constant frame rate; one output frame per source image, in bag order"
+}

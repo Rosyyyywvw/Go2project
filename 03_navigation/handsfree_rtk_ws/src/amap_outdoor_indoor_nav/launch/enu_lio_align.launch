@@ -1,0 +1,34 @@
+<launch>
+  <!-- ENU(geo_enu) -> world 对齐节点。
+       先有 geo_coordinate_layer 和 Super-LIO 的输出，再走一段足够长的轨迹，
+       节点会自动拟合并发布 world -> geo_enu 的 TF。 -->
+
+  <arg name="auto_fit" default="true" />
+  <arg name="min_samples" default="60" />
+  <arg name="min_baseline_m" default="10.0" />
+  <arg name="min_lateral_spread_m" default="2.0" />
+  <!-- 米级粗对齐场景（室外走到楼门口）用 2.0；拿到 RTK Fixed 后建议收紧到 0.5 -->
+  <arg name="max_rms_m" default="2.0" />
+  <arg name="calibration_file"
+       default="$(env HOME)/Go2W_Project/05_data/calib/enu_lio_align.json" />
+
+  <node pkg="amap_outdoor_indoor_nav" type="enu_lio_align.py"
+        name="enu_lio_align" output="screen">
+    <param name="parent_frame" value="world" />
+    <param name="child_frame" value="geo_enu" />
+    <param name="enu_topic" value="/amap_nav/enu_pose" />
+    <param name="odom_topic" value="/lio/odom" />
+
+    <param name="auto_fit" value="$(arg auto_fit)" />
+    <param name="min_samples" value="$(arg min_samples)" />
+    <param name="min_baseline" value="$(arg min_baseline_m)" />
+    <param name="min_lateral_spread" value="$(arg min_lateral_spread_m)" />
+    <param name="max_rms" value="$(arg max_rms_m)" />
+    <param name="max_time_diff" value="0.15" />
+    <param name="min_sample_spacing" value="0.2" />
+    <param name="tf_rate" value="10.0" />
+
+    <param name="calibration_file" value="$(arg calibration_file)" />
+    <param name="save_calibration" value="true" />
+  </node>
+</launch>

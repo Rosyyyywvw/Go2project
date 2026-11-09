@@ -1,0 +1,1 @@
+KERNEL=="ttyUSB*", ATTRS{interface}=="HandsFree RTK USB to UART Bridge Controller", MODE:="0777", SYMLINK+="HFRobotRTK"

@@ -1,0 +1,131 @@
+# Go2W 手动逐个启动命令
+# 对应当前 go2w_start.py 默认的 system-real-robot 实现。
+# 按编号顺序，每一段在一个新的 Bash 终端里执行，长期运行的终端保持打开。
+# 这是分段复制的命令记录，不要用 bash go2 整体执行。
+# DDS 网卡使用 eth0；如果更换网卡，需同时修改第 4、10 步。
+# 手动启动前，如果之前用一键脚本启动过，先执行：
+# python3 /home/unitree/Go2W_Project/go2w_start.py stop
+
+
+# 【终端 1：ROS Master】
+# 如果已经有 roscore 运行，复用现有的即可。
+source /opt/ros/noetic/setup.bash
+roscore
+
+
+# 【终端 2：RS32 雷达驱动】
+source /opt/ros/noetic/setup.bash
+source /home/unitree/robosense_ws/devel/setup.bash
+roslaunch rslidar_sdk start.launch rviz:=false
+# 等待 /rslidar_points 有数据，再启动点云转换。
+
+
+# 【终端 3：点云格式转换】
+source /opt/ros/noetic/setup.bash
+source /home/unitree/rstovelody_ws/devel/setup.bash
+rosrun rs_to_velodyne rs_to_velodyne XYZIRT XYZIRT
+# 输出：/velodyne_points。
+
+
+# 【终端 4：Go2W 高频 IMU】
+source /opt/ros/noetic/setup.bash
+python3 /home/unitree/unitree_sdk2_for_nav/go2w_lowstate_imu.py eth0
+# 输出：/imu_data_highrate。
+
+
+# 【终端 5：Super-LIO】
+# 先确认 /velodyne_points、/imu_data_highrate 都有数据。
+source /opt/ros/noetic/setup.bash
+source /home/unitree/Super-LIO/devel/setup.bash
+roslaunch super_lio M2DGR.launch rviz:=false
+# 等待 /lio/odom、/lio/cloud_world 有数据，再启动后续导航节点。
+
+
+# 【终端 6：局部规划器，使用指定的 system_real_robot.launch】
+source /opt/ros/noetic/setup.bash
+source /home/unitree/Go2W_Project/03_navigation/local/autonomous_exploration_development_environment/devel/setup.bash
+roslaunch /home/unitree/Go2W_Project/03_navigation/local/autonomous_exploration_development_environment/src/vehicle_simulator/launch/system_real_robot.launch
+# 启动 localPlanner、pathFollower、local 下的两个地形分析节点和手柄相关节点。
+# 输出 /terrain_map、/terrain_map_ext；第 8 步 FAR 直接使用这些地形图。
+# 本 launch 默认接入 Super-LIO，使用地形分析，并关闭重复的静态 TF、扫描生成、LOAM 和 RViz。
+# 当前 local_planner.launch 默认 maxSpeed=0.9、autonomySpeed=0.9 m/s。
+
+
+# 【终端 7：LIO 到车体的 TF】
+# 第 6 步的 localPlanner、pathFollower 启动并加载参数后执行。
+source /opt/ros/noetic/setup.bash
+python3 /home/unitree/Go2W_Project/vehicle_tf_from_lio.py
+# 发布 world -> vehicle、world -> imu_link，以及标定对应的雷达静态 TF。
+
+
+# 【终端 8：FAR 全局规划和 FAR RViz】
+# 地形分析已由第 6 步启动，FAR 不再重复启动。
+source /opt/ros/noetic/setup.bash
+source /home/unitree/Go2W_Project/03_navigation/local/autonomous_exploration_development_environment/devel/setup.bash
+source /home/unitree/unitree_ws/devel/setup.bash --extend
+source /home/unitree/farplanner_ws/src/far_planner-melodic-noetic/devel/setup.bash --extend
+rosparam set /robot_description -t /home/unitree/unitree_ws/src/unitree_ros/robots/go2w_description/urdf/go2w_description.urdf
+roslaunch far_planner far_planner_go2w.launch start_terrain:=false start_rviz:=true
+# 此 launch 同时启动 graph_decoder、障碍轮廓显示等节点。
+# 无图形桌面时，将 start_rviz:=true 改为 start_rviz:=false。
+
+
+# 【终端 9：局部规划 RViz，可选】
+# 在有图形桌面时执行；包含 FAR 的目标点工具插件。
+source /opt/ros/noetic/setup.bash
+source /home/unitree/Go2W_Project/03_navigation/local/autonomous_exploration_development_environment/devel/setup.bash
+source /home/unitree/unitree_ws/devel/setup.bash --extend
+source /home/unitree/farplanner_ws/src/far_planner-melodic-noetic/devel/setup.bash --extend
+env __GLX_VENDOR_LIBRARY_NAME=mesa LIBGL_ALWAYS_SOFTWARE=1 \
+  rosrun rviz rviz \
+  -d /home/unitree/Go2W_Project/03_navigation/local/autonomous_exploration_development_environment/src/vehicle_simulator/rviz/vehicle_simulator.rviz \
+  __name:=local_planner_rviz /state_estimation:=/lio/odom
+
+
+# 【终端 10：底盘速度订阅，最后执行】
+# 只看感知、建图和规划时，跳过本步骤。
+# 等待 /terrain_map 和 /cmd_vel 有数据后执行；执行后底盘会接收规划速度。
+source /opt/ros/noetic/setup.bash
+# 当前 local 工作区的 pathFollower 发布 geometry_msgs/Twist。
+# 可先运行 rostopic type /cmd_vel，确认输出为 geometry_msgs/Twist。
+export LD_LIBRARY_PATH=/home/unitree/Go2W_Project/04_unitree/unitree_sdk2_for_nav/thirdparty/lib/aarch64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
+/home/unitree/Go2W_Project/04_unitree/unitree_sdk2_for_nav/build/bin/go2_move_sub_twist eth0
+
+
+# 【可选终端：启动 D435i 相机驱动】
+# 启动 640×480、30 FPS 的彩色和深度图像，同时发布正向彩色预览。
+# 已有相机驱动运行时，不要重复启动。
+cd /home/unitree/Go2W_Project/05_data/d435i_recordings
+bash launch_camera.sh
+
+
+# 【可选终端：录制相机 ROS bag】
+# 相机启动后，在另一个终端执行；示例录制 10 秒测试包。
+# 只保存 /camera/color/image_raw 和 /camera/color/camera_info，文件在 bags/。
+source /opt/ros/noetic/setup.bash
+cd /home/unitree/Go2W_Project/05_data/d435i_recordings
+rosbag record --duration=10 -o bags/00_test /camera/color/image_raw /camera/color/camera_info
+# 不限时录制：rosbag record -o bags/00_test /camera/color/image_raw /camera/color/camera_info
+# 不限时录制时按一次 Ctrl+C，等待 bag 保存完成；-o 会在文件名中加入时间戳。
+# 检查录制结果：source /opt/ros/noetic/setup.bash && rosbag info bags/实际文件名.bag
+
+
+# 【辅助命令：在额外终端按需执行】
+# 先加载环境：source /opt/ros/noetic/setup.bash
+# 以下命令分别执行；rostopic hz、echo 等命令可用 Ctrl+C 结束。
+# 查看节点：rosnode list
+# 检查雷达：rostopic hz /rslidar_points
+# 检查转换后的点云：rostopic hz /velodyne_points
+# 检查 IMU：rostopic hz /imu_data_highrate
+# 检查里程计：rostopic hz /lio/odom
+# 检查地形图：rostopic hz /terrain_map
+# 查看速度：rostopic echo /cmd_vel
+# 查看速度话题类型和订阅者：rostopic info /cmd_vel
+# 查看车体 TF：rosrun tf tf_echo world vehicle
+# 查看速度参数：rosparam get /localPlanner/maxSpeed
+# 查看自主速度：rosparam get /pathFollower/autonomySpeed
+# 可选：在第 6 步之后、第 10 步之前保持停止：
+# rostopic pub -1 /stop std_msgs/Int8 'data: 2'
+# 解除上述停止：rostopic pub -1 /stop std_msgs/Int8 'data: 0'
+# 停止手动启动的程序：先停止底盘订阅，再在其余终端按 Ctrl+C，最后停止 roscore。
+# go2w_start.py stop 只管理它自己启动的进程，不会关闭这些手动启动的节点。

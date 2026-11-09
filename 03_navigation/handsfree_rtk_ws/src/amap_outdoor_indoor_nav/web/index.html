@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <title>Go2-W · 高德导航面板</title>
+    <link rel="stylesheet" href="/style.css" />
+    <script src="/app.js" defer></script>
+  </head>
+  <body>
+    <header class="page-header">
+      <div class="brand-mark" aria-hidden="true">G<span>2</span></div>
+      <div class="page-title">
+        <p class="eyebrow">GO2-W / FIELD NAVIGATION</p>
+        <h1>高德导航面板</h1>
+      </div>
+      <div class="header-actions">
+        <span id="connection-badge" class="badge neutral"><i></i>连接中</span>
+        <button id="open-settings" class="button button-quiet" type="button">地图设置</button>
+      </div>
+    </header>
+
+    <main>
+      <div class="intro-line">
+        <p>实时定位、运动轨迹与高德步行路线预览</p>
+        <span class="read-only-label">只读可视化 · 不控制机器人</span>
+      </div>
+      <div id="connection-notice" class="notice notice-warning" role="status" hidden></div>
+      <div class="dashboard">
+        <section class="card map-card" aria-labelledby="map-heading">
+          <div class="card-heading map-heading">
+            <div><p class="eyebrow">LIVE MAP</p><h2 id="map-heading">地图与轨迹</h2></div>
+            <div class="map-actions">
+              <button id="follow-button" type="button" class="button button-small is-active" aria-pressed="true">跟随位置</button>
+              <button id="fit-button" type="button" class="button button-small" disabled>轨迹全览</button>
+            </div>
+          </div>
+          <div class="map-stage">
+            <div id="map" aria-label="高德地图，可点击地图选择导航终点"></div>
+            <div id="map-placeholder" class="map-placeholder">
+              <div class="map-placeholder-icon" aria-hidden="true">⌖</div>
+              <h3 id="map-placeholder-title">连接高德地图</h3>
+              <p id="map-placeholder-text">正在读取地图配置，定位数据仍会独立更新。</p>
+              <button id="map-retry" class="button button-primary" type="button" hidden>重试加载地图</button>
+              <button id="map-configure" class="button button-primary" type="button" hidden>配置高德 Key</button>
+            </div>
+            <div id="map-tip" class="map-tip" hidden><span class="map-tip-dot"></span>点击地图选择终点</div>
+            <div class="map-legend" aria-label="地图图例"><span><i class="legend-dot current"></i>当前位置</span><span><i class="legend-line"></i>定位轨迹</span><span><i class="legend-dot destination"></i>导航终点</span></div>
+          </div>
+          <div class="map-footer"><span id="map-position-status">等待 GCJ-02 定位</span><span id="track-count">轨迹 0 个点</span></div>
+        </section>
+
+        <aside class="side-column" aria-label="定位状态与路线规划">
+          <section class="card telemetry-card" aria-labelledby="position-heading">
+            <div class="card-heading"><div><p class="eyebrow">POSITIONING</p><h2 id="position-heading">定位状态</h2></div><span id="rtk-badge" class="badge neutral">等待数据</span></div>
+            <div class="quality-grid">
+              <div><span class="metric-label">卫星数</span><strong id="satellites">—</strong><span class="metric-unit">颗</span></div>
+              <div><span class="metric-label">驱动估计 σ</span><strong id="accuracy">—</strong><span class="metric-unit">m · 水平</span></div>
+              <div><span class="metric-label">HDOP</span><strong id="hdop">—</strong><span class="metric-unit">几何精度</span></div>
+            </div>
+            <p id="quality-description" class="muted quality-description">等待原始 GGA 质量信息，尚不能判断 RTK 状态。</p>
+            <div class="coordinate-group">
+              <div class="coordinate-title"><h3>地图坐标 <span>GCJ-02</span></h3><span id="gcj-age" class="data-age">未接收</span></div>
+              <dl class="coordinate-list"><div><dt>经度</dt><dd id="gcj-longitude">—</dd></div><div><dt>纬度</dt><dd id="gcj-latitude">—</dd></div></dl>
+            </div>
+            <details class="technical-details">
+              <summary>原始定位与局部坐标</summary>
+              <div class="coordinate-group">
+                <div class="coordinate-title"><h3>卫星坐标 <span>WGS84</span></h3><span id="fix-age" class="data-age">未接收</span></div>
+                <dl class="coordinate-list"><div><dt>经度</dt><dd id="fix-longitude">—</dd></div><div><dt>纬度</dt><dd id="fix-latitude">—</dd></div><div><dt>海拔</dt><dd id="fix-altitude">—</dd></div><div><dt>GNSS 状态</dt><dd id="fix-status">—</dd></div></dl>
+              </div>
+              <div class="coordinate-group">
+                <div class="coordinate-title"><h3>局部坐标 <span>ENU / m</span></h3><span id="enu-age" class="data-age">未接收</span></div>
+                <dl class="coordinate-list"><div><dt>East / North / Up</dt><dd id="enu-position">—</dd></div><div><dt>坐标系</dt><dd id="enu-frame">—</dd></div><div><dt>原点经纬度</dt><dd id="origin-position">—</dd></div></dl>
+              </div>
+              <p id="geo-status" class="muted geo-status">坐标转换状态：等待数据</p>
+              <p id="quality-age" class="muted">GGA 质量数据：未接收</p>
+            </details>
+          </section>
+
+          <section class="card planner-card" aria-labelledby="planner-heading">
+            <div class="card-heading"><div><p class="eyebrow">ROUTE PREVIEW</p><h2 id="planner-heading">高德路线预览</h2></div><span class="walking-label">步行</span></div>
+            <p class="planner-hint">点击地图选择终点，或输入 GCJ-02 经纬度。</p>
+            <form id="destination-form">
+              <div class="input-pair"><label>终点经度<input id="destination-longitude" name="longitude" type="number" step="any" min="-180" max="180" inputmode="decimal" placeholder="例如 121.473700" required /></label><label>终点纬度<input id="destination-latitude" name="latitude" type="number" step="any" min="-90" max="90" inputmode="decimal" placeholder="例如 31.230400" required /></label></div>
+              <div class="planner-buttons"><button id="plan-button" class="button button-primary" type="submit" disabled>预览步行路线</button><button id="clear-route" class="button button-quiet" type="button" disabled>清除</button></div>
+            </form>
+            <p id="plan-readiness" class="plan-readiness" role="status">等待可用的 GCJ-02 实时定位。</p>
+            <div class="preview-note"><span aria-hidden="true">ⓘ</span><p>路线仅供预览，不会下发运动指令。<br />FAR / 激光路径尚未地理对齐。</p></div>
+          </section>
+        </aside>
+      </div>
+
+      <div class="route-panels">
+      <section class="card route-card" aria-labelledby="route-heading">
+        <div class="card-heading"><div><p class="eyebrow">WALKING DIRECTIONS</p><h2 id="route-heading">路线详情</h2></div><span id="route-result-label" class="muted">尚未规划</span></div>
+        <div id="route-empty" class="route-empty">选好终点后，使用当前实时位置预览路线。机器人实际通行能力需现场确认。</div>
+        <div id="route-result" hidden><div class="route-summary"><div><span class="metric-label">路线距离</span><strong id="route-distance">—</strong></div><div><span class="metric-label">预计步行时间</span><strong id="route-time">—</strong></div><p>高德步行时间估算<br />不代表机器人执行时间</p></div><ol id="route-steps" class="route-steps"></ol></div>
+      </section>
+      <section class="card local-route-card" aria-labelledby="local-route-heading">
+        <div class="card-heading"><div><p class="eyebrow">ROBOT NAVIGATION</p><h2 id="local-route-heading">FAR 实际路径</h2></div><span id="local-path-badge" class="badge neutral">等待路径</span></div>
+        <div class="local-path-stage"><svg id="local-path" viewBox="0 0 600 240" role="img" aria-label="FAR 米制局部路径图" hidden></svg><p id="local-path-empty">等待 FAR 路径数据<br /><span>来自机器人实际导航路径，不与高德地图叠加</span></p></div>
+        <div class="local-path-footer"><span id="local-path-info">坐标系：等待数据</span><span id="local-path-age">未接收</span></div>
+        <p id="local-path-notice" class="local-path-notice">仅叠加同坐标系的里程计和目标点；尚未与地理坐标对齐。</p>
+      </section>
+      </div>
+      <footer class="page-footer"><span>GO2-W · 高德可视化</span><span id="last-update">等待定位服务</span></footer>
+    </main>
+
+    <dialog id="settings-dialog" aria-labelledby="settings-heading">
+      <form id="settings-form">
+        <div class="dialog-heading"><div><p class="eyebrow">MAP CONFIGURATION</p><h2 id="settings-heading">高德地图设置</h2></div><button id="close-settings" class="button button-quiet" type="button" aria-label="关闭地图设置">✕</button></div>
+        <p class="muted">使用高德开放平台的 Web 端（JS API）Key。输入内容仅保留在当前浏览器会话，不写入项目文件。</p>
+        <label>高德 Web JS API Key<input id="amap-key" type="password" autocomplete="off" spellcheck="false" /></label>
+        <label>安全密钥 securityJsCode（新申请的 Key 需配置）<input id="amap-security-code" type="password" autocomplete="off" spellcheck="false" /></label>
+        <p id="settings-source" class="muted"></p>
+        <p id="settings-error" class="form-error" role="alert" hidden></p>
+        <div class="dialog-actions"><button id="forget-settings" class="button button-quiet" type="button">清除临时配置</button><button class="button button-primary" type="submit">应用并加载地图</button></div>
+      </form>
+    </dialog>
+  </body>
+</html>

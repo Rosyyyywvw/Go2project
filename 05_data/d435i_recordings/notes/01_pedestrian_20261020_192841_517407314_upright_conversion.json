@@ -1,0 +1,17 @@
+{
+  "source": "/home/unitree/Go2W_Project/05_data/d435i_recordings/bags/01_pedestrian_20261020_192841_517407314.bag",
+  "topic": "/camera/color/image_raw",
+  "output": "/home/unitree/Go2W_Project/05_data/d435i_recordings/videos/01_pedestrian_20261020_192841_517407314_upright.mp4",
+  "codec": "mp4v",
+  "width": 1280,
+  "height": 720,
+  "source_encoding": "rgb8",
+  "fps": 30.0,
+  "source_frames": 1628,
+  "rotation_degrees": 180,
+  "decoded_frames": 1628,
+  "video_duration_seconds": 54.266666666666666,
+  "source_stamp_span_seconds": 54.27557969093323,
+  "size_bytes": 30883561,
+  "timing": "Constant frame rate; one output frame per source image, in bag order"
+}
